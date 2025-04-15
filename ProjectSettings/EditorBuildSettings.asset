@@ -11,5 +11,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Interior.unity
     guid: 5d2a7c618c49b4e4d90940f2a873d263
+  - enabled: 1
+    path: Assets/Scenes/ruleta.unity
+    guid: c92e3c5a7b6d74e4394fbeb65375e524
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class MovementScript : MonoBehaviour
 {
+    /// <summary>
+    ///  add dynamic movement
+    /// </summary>
     public bool facingRight;
     public CharacterController controller;
     public float speed;
