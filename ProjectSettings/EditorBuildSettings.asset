@@ -14,5 +14,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ruleta.unity
     guid: c92e3c5a7b6d74e4394fbeb65375e524
+  - enabled: 1
+    path: Assets/Scenes/casino.unity
+    guid: b3602bfd651e05548af09c5e8befbac0
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
