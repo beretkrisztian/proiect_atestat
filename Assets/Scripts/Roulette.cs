@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.Data;
+using Mono.Data.Sqlite;
+using System.IO;
 
 public class Roulette : MonoBehaviour
 {
@@ -25,6 +28,7 @@ public class Roulette : MonoBehaviour
     public TMP_InputField inputSuma;
     public TextMeshProUGUI mesajText;
     public TextMeshProUGUI soldText;
+    private string dbPath;
 
     private enum CuloarePariu { Niciuna, Rosu, Negru }
     private CuloarePariu culoareSelectata = CuloarePariu.Niciuna;
@@ -33,9 +37,14 @@ public class Roulette : MonoBehaviour
 
     void Start()
     {
+        dbPath = "URI=file:" + Application.persistentDataPath + "/rouletteDB.db";
+        CreeazaBazaDacaNuExista();
+
+        sold = CitesteSoldDinBaza();
+        ActualizeazaSold();
+
         butonRosu.onClick.AddListener(() => SelecteazaCuloare(CuloarePariu.Rosu));
         butonNegru.onClick.AddListener(() => SelecteazaCuloare(CuloarePariu.Negru));
-        ActualizeazaSold();
     }
 
     void Update()
@@ -56,6 +65,53 @@ public class Roulette : MonoBehaviour
             if (t >= 1f)
             {
                 StopSpin();
+            }
+        }
+    }
+
+    private void CreeazaBazaDacaNuExista()
+    {
+        using (var connection = new SqliteConnection(dbPath))
+        {
+            connection.Open();
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "CREATE TABLE IF NOT EXISTS Jucator (id INTEGER PRIMARY KEY, sold REAL);";
+                cmd.ExecuteNonQuery();
+                cmd.CommandText = "SELECT COUNT(*) FROM Jucator;";
+                int count = int.Parse(cmd.ExecuteScalar().ToString());
+                if (count == 0)
+                {
+                    cmd.CommandText = "INSERT INTO Jucator (sold) VALUES (1000);";
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+    }
+
+    private float CitesteSoldDinBaza()
+    {
+        using (var connection = new SqliteConnection(dbPath))
+        {
+            connection.Open();
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "SELECT sold FROM Jucator WHERE id = 1;";
+                return float.Parse(cmd.ExecuteScalar().ToString());
+            }
+        }
+    }
+
+    private void ActualizeazaSoldInBaza(float sumaNoua)
+    {
+        using (var connection = new SqliteConnection(dbPath))
+        {
+            connection.Open();
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "UPDATE Jucator SET sold = @sold WHERE id = 1;";
+                cmd.Parameters.AddWithValue("@sold", sumaNoua);
+                cmd.ExecuteNonQuery();
             }
         }
     }
@@ -83,6 +139,7 @@ public class Roulette : MonoBehaviour
         }
 
         sold -= sumaPariata; // Scade pariu din sold imediat
+        ActualizeazaSoldInBaza(sold);
         inputSuma.interactable = false;
 
         currentSpinTime = 0f;
@@ -123,6 +180,7 @@ public class Roulette : MonoBehaviour
         }
 
         ActualizeazaSold();
+        ActualizeazaSoldInBaza(sold);
     }
 
     private void HandleTickSound(float currentAngle)
